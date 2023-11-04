@@ -37,8 +37,11 @@
     "autoload": {
         "psr-4": {
             "Genstack\\": "src/",
-            "Genstack\\Genstack\\Database\\Factories\\": "database/factories/"
-        }
+            "Genstack\\Database\\Factories\\": "database/factories/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

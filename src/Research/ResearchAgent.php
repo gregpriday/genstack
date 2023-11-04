@@ -12,16 +12,17 @@ use Illuminate\Support\Facades\Cache;
 class ResearchAgent
 {
     const MODEL = 'gpt-4';
+    const CACHE_DURATION = '1 day';
 
     private SerperClient $serper;
     private ZyteClient $zyte;
+    private Summarizer $summarizer;
 
-    const CACHE_DURATION = '1 day'; // 24 hours
-
-    public function __construct(SerperClient $serper, ZyteClient $zyte)
+    public function __construct(SerperClient $serper, ZyteClient $zyte, Summarizer $summarizer)
     {
         $this->serper = $serper;
         $this->zyte = $zyte;
+        $this->summarizer = $summarizer;
     }
 
     /**
@@ -39,13 +40,14 @@ class ResearchAgent
         $markdown = $this->getMarkdownFromCacheOrExtract($urls);
 
         $information = collect($markdown)
-            ->map(function($content, $url){
-                $content = substr($content, 0, round(2048*3.7));
+            ->filter()
+            ->map(function($content, $url) use ($prompt){
+                $content = $this->summarizer->summarize($content, $prompt);
                 return "> {$url}\n\n---\n\n{$content}\n\n---\n\n";
             })
             ->join("\n");
 
-        $system = trim(file_get_contents(base_path('resources/prompts/research/system-research.txt')));
+        $system = trim(file_get_contents(genstack_prompts_path('research/system-research.txt')));
         $messages = [];
         $messages[] = ['role' => 'system', 'content' => $system];
         $messages[] = ['role' => 'user', 'content' => $information];
@@ -64,8 +66,8 @@ class ResearchAgent
     protected function getUrlsToClick(string $prompt): array
     {
         $messages = [];
-        $system = trim(file_get_contents(base_path('resources/prompts/research/system-fetch-results.txt')));
-        $functions = json_decode(file_get_contents(base_path('resources/prompts/research/search-functions.json')), true);
+        $system = trim(file_get_contents(genstack_prompts_path('/research/system-fetch-results.txt')));
+        $functions = json_decode(file_get_contents(genstack_prompts_path('/research/search-functions.json')), true);
 
         $messages[] = ['role' => 'system', 'content' => $system];
         $messages[] = ['role' => 'system', 'content' => $prompt];
@@ -126,6 +128,24 @@ class ResearchAgent
             $host = parse_url($url, PHP_URL_HOST);
             return !in_array($host, $blockedHosts);
         });
+    }
+
+    /**
+     * @param array|string $markdown
+     * @param string $prompt The prompt to use for the extraction
+     * @return array
+     */
+    protected function extractContentFromMarkdown(array|string $markdown, string $prompt): array
+    {
+        $return = [];
+        foreach($markdown as $url => $content) {
+            $extracted = trim($this->extractor->extract($prompt, $content));
+            if($extracted !== 'FALSE') {
+                $return[$url] = $extracted;
+            }
+        }
+
+        return $return;
     }
 
     protected function getMarkdownFromCacheOrExtract(array $urls): array

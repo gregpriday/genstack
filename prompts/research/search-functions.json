@@ -1,0 +1,85 @@
+[
+    {
+        "name": "search_google",
+        "description": "Execute a set of search queries on Google and return the organic search results for each query.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "queries": {
+                    "type": "array",
+                    "description": "An array of search queries to be executed on Google. Each query is represented as a string. A maximum of 3 queries can be provided.",
+                    "items": {
+                        "type": "string"
+                    },
+                    "maxItems": 3
+                }
+            },
+            "required": ["queries"]
+        },
+        "output": {
+            "type": "array",
+            "description": "An array containing the organic search results and search parameters for each query.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "organic": {
+                        "type": "array",
+                        "description": "An array of organic search results obtained from Google for the query. Each result is represented as an object containing a title, link, and snippet.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "title": {
+                                    "type": "string",
+                                    "description": "The title of the web page."
+                                },
+                                "link": {
+                                    "type": "string",
+                                    "description": "The URL of the web page."
+                                },
+                                "snippet": {
+                                    "type": "string",
+                                    "description": "A brief description or excerpt from the web page."
+                                },
+                                "rating": {
+                                    "type": "number",
+                                    "description": "The rating of the web page, if available."
+                                }
+                            }
+                        }
+                    },
+                    "searchParameters": {
+                        "type": "object",
+                        "description": "The search parameters used for the query.",
+                        "properties": {
+                            "q": {
+                                "type": "string",
+                                "description": "The search query."
+                            },
+                            "num": {
+                                "type": "integer",
+                                "description": "The number of results requested."
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    {
+        "name": "click_results",
+        "description": "Click on a list of URLs and perform some action.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "urls": {
+                    "type": "array",
+                    "description": "A list of URLs to be clicked. Each URL is represented as a string.",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": ["urls"]
+        }
+    }
+]
