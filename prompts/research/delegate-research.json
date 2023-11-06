@@ -1,0 +1,45 @@
+{
+    "name": "delegate_research",
+    "description": "Delegate research prompts to another research agent to gather additional information on each prompt. Call this if you need more detailed information to construct your research response.",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "prompts": {
+                "type": "array",
+                "description": "A list of up to three research prompts to delegate to separate research agents for more information.",
+                "items": {
+                    "type": "string"
+                },
+                "minItems": 1,
+                "maxItems": 3
+            }
+        },
+        "required": ["prompts"]
+    },
+    "examples": {
+        "example1": {
+            "summary": "Requesting recent updates on CRISPR technology developments.",
+            "value": {
+                "prompts": [
+                    "Investigate the most recent advances in CRISPR technology for gene editing in 2023."
+                ]
+            }
+        },
+        "example2": {
+            "summary": "Inquiring about the latest research on mRNA vaccine safety.",
+            "value": {
+                "prompts": [
+                    "Gather the latest data on the efficacy and safety of mRNA vaccines in development stages in 2023."
+                ]
+            }
+        },
+        "example3": {
+            "summary": "Seeking information on new EU digital privacy regulations.",
+            "value": {
+                "prompts": [
+                    "Compile a summary of newly implemented regulations in the EU affecting digital privacy in 2023 onwards."
+                ]
+            }
+        }
+    }
+}

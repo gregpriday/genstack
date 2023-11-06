@@ -11,7 +11,10 @@ use Illuminate\Support\Facades\Cache;
 
 class ResearchAgent
 {
-    const MODEL = 'gpt-4';
+    const RESEARCH_MODEL = 'gpt-3.5-turbo-16k';
+    const SEARCH_MODEL = 'gpt-4';
+    const CLICK_MODEL = 'gpt-4';
+
     const CACHE_DURATION = '7 days';
 
     private SerperClient $serper;
@@ -27,42 +30,89 @@ class ResearchAgent
 
     /**
      * @param string $prompt The prompt of what we want the system to research.
+     * @param int $maxDepth The maximum recursion depth for the research method.
      * @return null|string The response from the AI
      *
      * @throws GuzzleException
      */
-    public function research(string $prompt): ?string
+    public function research(string $prompt, int $maxDepth = 1): ?string
     {
-        // Let's get the content of all the pages
+        // Get the content from the pages.
         $urls = $this->getUrlsToClick($prompt);
-        if(empty($urls)) {
+        if (empty($urls)) {
             return null;
         }
 
         $markdown = $this->getMarkdownFromCacheOrExtract($urls);
 
+        // Prepare the information for the AI
         $information = collect($markdown)
             ->filter()
-            ->map(function($content, $url) use ($prompt){
+            ->map(function($content, $url) use ($prompt) {
                 $content = $this->summarizer->summarize($content, $prompt);
                 return "> {$url}\n\n---\n\n{$content}\n\n---\n\n";
             })
             ->join("\n");
 
+        // Add the system and user's role messages.
+        $functions = json_decode(file_get_contents(genstack_prompts_path('research/delegate-research.json')), true);
         $system = trim(file_get_contents(genstack_prompts_path('research/system-research.txt')));
-        $messages = [];
-        $messages[] = ['role' => 'system', 'content' => $system];
-        $messages[] = ['role' => 'user', 'content' => $information];
-        $messages[] = ['role' => 'user', 'content' => $prompt];
+        $system = str_replace('{{DATE}}', now()->format('d F Y'), $system);
 
+        $messages = [
+            ['role' => 'system', 'content' => $system],
+            ['role' => 'user', 'content' => $information],
+            ['role' => 'user', 'content' => $prompt]
+        ];
+
+        // Call the OpenAI API with the messages.
         $response = OpenAI::chat()
             ->create([
-                'model' => self::MODEL,
+                'model' => self::RESEARCH_MODEL,
                 'messages' => $messages,
+                'functions' => $functions,
                 'temperature' => 0.2,
             ]);
 
-        return $response->choices[0]->message->content;
+        // Check if 'delegate_research' function is called by the AI and if the depth allows for further research.
+        if ($response->choices[0]->message->functionCall->name === 'delegate_research') {
+            $arguments = $response->choices[0]->message->functionCall->arguments;
+            $additionalResearch = [];
+
+            // Record the function call to the message array.
+            $messages[] = [
+                'role' => 'assistant',
+                'content' => null,
+                'function_call' => ['name' => 'delegate_research', 'arguments' => json_encode($arguments)]
+            ];
+
+            // Recursively call research for each sub-prompt from the delegate research.
+            foreach ($arguments->prompts as $subPrompt) {
+                $recursiveResponse = $this->research($subPrompt, $maxDepth - 1);
+                if ($recursiveResponse) {
+                    $additionalResearch[] = "# {$subPrompt}\n\n" . $recursiveResponse;
+                }
+            }
+            $additionalResearchContent = implode("\n\n---\n\n", $additionalResearch);
+
+            // ADd the additional research which the research agent can use to construct the final research.
+            $messages[] = [
+                'role' => 'function',
+                'name' => 'delegate_research',
+                'content' => $additionalResearchContent
+            ];
+
+            // Call the OpenAI API again with updated messages after recursive research.
+            $response = OpenAI::chat()
+                ->create([
+                    'model' => self::RESEARCH_MODEL,
+                    'messages' => $messages,
+                    'temperature' => 0.2,
+                ]);
+        }
+
+        // Return the final research content.
+        return $response->choices[0]->message->content ?? null;
     }
 
     /**
@@ -75,15 +125,15 @@ class ResearchAgent
     protected function getUrlsToClick(string $prompt): array
     {
         $messages = [];
-        $system = trim(file_get_contents(genstack_prompts_path('/research/system-fetch-results.txt')));
-        $functions = json_decode(file_get_contents(genstack_prompts_path('/research/search-functions.json')), true);
+        $system = trim(file_get_contents(genstack_prompts_path('research/system-fetch-results.txt')));
+        $functions = json_decode(file_get_contents(genstack_prompts_path('research/search-functions.json')), true);
 
         $messages[] = ['role' => 'system', 'content' => $system];
         $messages[] = ['role' => 'system', 'content' => $prompt];
 
         $response = OpenAI::chat()
             ->create([
-                'model' => self::MODEL,
+                'model' => self::SEARCH_MODEL,
                 'messages' => $messages,
                 'functions' => $functions,
                 'temperature' => 0.0,
@@ -112,7 +162,7 @@ class ResearchAgent
         // We need to decide which results to click on
         $response = OpenAI::chat()
             ->create([
-                'model' => self::MODEL,
+                'model' => self::CLICK_MODEL,
                 'messages' => $messages,
                 'functions' => $functions,
                 'temperature' => 0.0,
