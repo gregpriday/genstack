@@ -2,6 +2,9 @@
 
 namespace Genstack;
 
+use Genstack\Originality\OriginalityClient;
+use Genstack\ParagraphSplitter\ParagraphSplitter;
+use Genstack\Rewriter\ContentRewriter;
 use Genstack\Serper\SerperClient;
 use Genstack\Zyte\ZyteClient;
 use GuzzleHttp\Client;
@@ -58,6 +61,25 @@ class GenstackServiceProvider extends PackageServiceProvider
 
         $this->app->singleton(ZyteClient::class, function(){
             return new ZyteClient(config('genstack.zyte.key'));
+        });
+
+        $this->app->singleton(ParagraphSplitter::class, function(){
+            return new ParagraphSplitter();
+        });
+
+        $this->app->singleton(ContentRewriter::class, function(){
+            return new ContentRewriter(
+                app(ParagraphSplitter::class),
+                config('genstack.rewriter.model'),
+                config('genstack.rewriter.target'),
+            );
+        });
+
+        $this->app->singleton(OriginalityClient::class, function(){
+            return new OriginalityClient(
+                config('genstack.originality.key'),
+                config('genstack.originality.model')
+            );
         });
     }
 }

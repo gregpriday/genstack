@@ -1,8 +1,9 @@
 <?php
 
-namespace Genstack\Tests;
+namespace Genstack\Tests\Unit;
 
 use Genstack\Research\ResearchAgent;
+use Genstack\Tests\TestCase;
 
 class ResearchAgentTest extends TestCase
 {

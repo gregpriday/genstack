@@ -65,7 +65,7 @@ class ContentRewriter
 
     protected function preparePrompt(string $content): string
     {
-        $prompt = trim(file_get_contents(genstack_prompts_path('rewriter/prompt.txt')));
+        $prompt = trim(file_get_contents(genstack_prompts_path('rewriter/instructions.txt')));
         $prompt = str_replace('{{CONTENT}}', $content, $prompt);
         return $prompt;
     }
