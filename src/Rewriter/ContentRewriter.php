@@ -4,6 +4,7 @@ namespace Genstack\Rewriter;
 
 use Genstack\OpenAI\Facades\OpenAI;
 use Genstack\ParagraphSplitter\ParagraphSplitter;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Collection;
 
 class ContentRewriter
@@ -15,6 +16,13 @@ class ContentRewriter
     private string $model;
     private string $target;
 
+    /**
+     * ContentRewriter constructor.
+     *
+     * @param ParagraphSplitter $splitter The ParagraphSplitter instance.
+     * @param string            $model    The model identifier for OpenAI chat completion.
+     * @param string            $target   The target style or intent for rewriting.
+     */
     public function __construct(ParagraphSplitter $splitter, string $model = self::DEFAULT_MODEL, string $target = self::DEFAULT_TARGET)
     {
         $this->splitter = $splitter;
@@ -22,6 +30,15 @@ class ContentRewriter
         $this->target = $target;
     }
 
+    /**
+     * Rewrites the given content by making a request to OpenAI's API.
+     *
+     * @param string $content The content to be rewritten.
+     * @param float $temperature The creativity temperature for the rewrite.
+     *
+     * @return string The rewritten content.
+     * @throws GuzzleException
+     */
     public function rewrite(string $content, float $temperature = 0.2): string
     {
         // Split the content into parts or use as-is
