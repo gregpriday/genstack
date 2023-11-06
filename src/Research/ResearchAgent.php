@@ -6,6 +6,7 @@ use Genstack\OpenAI\Facades\OpenAI;
 use Genstack\Serper\SerperClient;
 use Genstack\Zyte\ZyteClient;
 use GuzzleHttp\Exception\GuzzleException;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 
 class ResearchAgent
@@ -35,7 +36,7 @@ class ResearchAgent
      *
      * @throws GuzzleException
      */
-    public function research(string $prompt, int $maxDepth = 1): ?string
+    public function research(string $prompt, int $maxDepth = 2): ?string
     {
         // Get the content from the pages.
         $urls = $this->getUrlsToClick($prompt);
@@ -68,18 +69,23 @@ class ResearchAgent
             ['role' => 'user', 'content' => $instructions]
         ];
 
-        // Call the OpenAI API with the messages.
-        $response = OpenAI::chat()
-            ->create([
-                'model' => self::RESEARCH_MODEL,
-                'messages' => $messages,
+        $args = [
+            'model' => self::RESEARCH_MODEL,
+            'messages' => $messages,
+            'temperature' => 0.15,
+        ];
+        if($maxDepth > 1) {
+            $args = array_merge([
                 'functions' => $functions,
-                'temperature' => 0.15,
-            ]);
+            ], $args);
+        }
+
+        // Call the OpenAI API with the messages.
+        $response = OpenAI::chat()->create($args);
 
         // Check if 'delegate_research' function is called by the AI and if the depth allows for further research.
         if ($response->choices[0]->message->functionCall?->name === 'delegate_research') {
-            $arguments = $response->choices[0]->message->functionCall->arguments;
+            $arguments = json_decode($response->choices[0]->message->functionCall->arguments);
             $additionalResearch = [];
 
             // Record the function call to the message array.
@@ -89,8 +95,9 @@ class ResearchAgent
                 'function_call' => ['name' => 'delegate_research', 'arguments' => json_encode($arguments)]
             ];
 
+            $subPrompts = Arr::wrap($arguments->prompts);
             // Recursively call research for each sub-prompt from the delegate research.
-            foreach ($arguments->prompts as $subPrompt) {
+            foreach ($subPrompts as $subPrompt) {
                 $recursiveResponse = $this->research($subPrompt, $maxDepth - 1);
                 if ($recursiveResponse) {
                     $additionalResearch[] = "# {$subPrompt}\n\n" . $recursiveResponse;
@@ -104,6 +111,9 @@ class ResearchAgent
                 'name' => 'delegate_research',
                 'content' => $additionalResearchContent
             ];
+
+            // Add the message to do the final research again.
+            $messages[] = ['role' => 'user', 'content' => $instructions];
 
             // Call the OpenAI API again with updated messages after recursive research.
             $response = OpenAI::chat()

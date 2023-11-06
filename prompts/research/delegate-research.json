@@ -19,26 +19,11 @@
         },
         "examples": {
             "example1": {
-                "summary": "Requesting recent updates on CRISPR technology developments.",
+                "summary": "Requesting recent updates on CRISPR technology developments and risks.",
                 "value": {
                     "prompts": [
-                        "Investigate the most recent advances in CRISPR technology for gene editing in 2023."
-                    ]
-                }
-            },
-            "example2": {
-                "summary": "Inquiring about the latest research on mRNA vaccine safety.",
-                "value": {
-                    "prompts": [
-                        "Gather the latest data on the efficacy and safety of mRNA vaccines in development stages in 2023."
-                    ]
-                }
-            },
-            "example3": {
-                "summary": "Seeking information on new EU digital privacy regulations.",
-                "value": {
-                    "prompts": [
-                        "Compile a summary of newly implemented regulations in the EU affecting digital privacy in 2023 onwards."
+                        "Investigate the most recent advances in CRISPR technology for gene editing in 2023.",
+                        "Are there any recent developments in CRISPR technology that could pose serious risks?"
                     ]
                 }
             }
