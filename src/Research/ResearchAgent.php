@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Cache;
 class ResearchAgent
 {
     const MODEL = 'gpt-4';
-    const CACHE_DURATION = '1 day';
+    const CACHE_DURATION = '7 days';
 
     private SerperClient $serper;
     private ZyteClient $zyte;
@@ -28,6 +28,8 @@ class ResearchAgent
     /**
      * @param string $prompt The prompt of what we want the system to research.
      * @return null|string The response from the AI
+     *
+     * @throws GuzzleException
      */
     public function research(string $prompt): ?string
     {
@@ -63,6 +65,13 @@ class ResearchAgent
         return $response->choices[0]->message->content;
     }
 
+    /**
+     * Get the URLs to click on from the search results.
+     *
+     * @param string $prompt
+     * @return array
+     * @throws GuzzleException
+     */
     protected function getUrlsToClick(string $prompt): array
     {
         $messages = [];
@@ -119,6 +128,12 @@ class ResearchAgent
         return array_slice($urls, 0, 5);
     }
 
+    /**
+     * Filter out URLs we know we can't get from Zyte.
+     *
+     * @param array $urls
+     * @return array
+     */
     protected function filterUrls(array $urls): array
     {
         $blockedHosts = config('research.blocked_hosts');
@@ -131,23 +146,12 @@ class ResearchAgent
     }
 
     /**
-     * @param array|string $markdown
-     * @param string $prompt The prompt to use for the extraction
+     * Extract markdown either from the URL, or from the cache.
+     *
+     * @param array $urls
      * @return array
+     * @throws GuzzleException
      */
-    protected function extractContentFromMarkdown(array|string $markdown, string $prompt): array
-    {
-        $return = [];
-        foreach($markdown as $url => $content) {
-            $extracted = trim($this->extractor->extract($prompt, $content));
-            if($extracted !== 'FALSE') {
-                $return[$url] = $extracted;
-            }
-        }
-
-        return $return;
-    }
-
     protected function getMarkdownFromCacheOrExtract(array $urls): array
     {
         $cachedMarkdown = [];
