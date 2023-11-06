@@ -9,9 +9,6 @@ use Illuminate\Support\Collection;
 
 class ContentRewriter
 {
-    const DEFAULT_MODEL = 'ft:gpt-3.5-turbo-0613:siteorigin::89vbQuR2';
-    const DEFAULT_TARGET = 'the target style';
-
     private ParagraphSplitter $splitter;
     private string $model;
     private string $target;
@@ -21,9 +18,9 @@ class ContentRewriter
      *
      * @param ParagraphSplitter $splitter The ParagraphSplitter instance.
      * @param string            $model    The model identifier for OpenAI chat completion.
-     * @param string            $target   The target style or intent for rewriting.
+     * @param string            $target   The target style or intent for rewriting. Should tie in with model training.
      */
-    public function __construct(ParagraphSplitter $splitter, string $model = self::DEFAULT_MODEL, string $target = self::DEFAULT_TARGET)
+    public function __construct(ParagraphSplitter $splitter, string $model, string $target)
     {
         $this->splitter = $splitter;
         $this->model = $model;
@@ -63,6 +60,12 @@ class ContentRewriter
             ->join("\n\n");
     }
 
+    /**
+     * Prepares the prompt for the given content.
+     *
+     * @param string $content The content we're rewriting.
+     * @return string
+     */
     protected function preparePrompt(string $content): string
     {
         $prompt = trim(file_get_contents(genstack_prompts_path('rewriter/instructions.txt')));
@@ -70,6 +73,9 @@ class ContentRewriter
         return $prompt;
     }
 
+    /**
+     * @return string The system prompt for the rewrite.
+     */
     protected function systemPrompt(): string
     {
         $prompt = trim(file_get_contents(genstack_prompts_path('rewriter/system.txt')));
