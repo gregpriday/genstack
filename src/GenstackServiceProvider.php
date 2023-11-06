@@ -2,6 +2,8 @@
 
 namespace Genstack;
 
+use Genstack\Serper\SerperClient;
+use Genstack\Zyte\ZyteClient;
 use GuzzleHttp\Client;
 use GuzzleHttp\HandlerStack;
 use GuzzleRetry\GuzzleRetryMiddleware;
@@ -22,6 +24,7 @@ class GenstackServiceProvider extends PackageServiceProvider
          */
         $package
             ->name('genstack')
+            ->hasConfigFile()
             ->hasCommands([]);
     }
 
@@ -47,6 +50,14 @@ class GenstackServiceProvider extends PackageServiceProvider
                 ->withOrganization($organization)
                 ->withHttpClient($client)
                 ->make();
+        });
+
+        $this->app->singleton(SerperClient::class, function(){
+            return new SerperClient(config('genstack.serper.key'));
+        });
+
+        $this->app->singleton(ZyteClient::class, function(){
+            return new ZyteClient(config('genstack.zyte.key'));
         });
     }
 }

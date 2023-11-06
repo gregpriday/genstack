@@ -1,0 +1,5 @@
+Based on the previous content, please write a very detailed research report on the following:
+
+{{PROMPT}}
+
+Include as much detail as possible. The more detail you provide, the better your report will be. You do not need to cite sources.

@@ -2,8 +2,8 @@
 
 namespace Genstack\Zyte;
 
-use Genstack\Integrations\Zyte\CleanHtmlExtractor;
-use Genstack\Integrations\Zyte\MarkdownExtractor;
+use Genstack\Zyte\Extractors\CleanHtmlExtractor;
+use Genstack\Zyte\Extractors\MarkdownExtractor;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\HandlerStack;
@@ -109,7 +109,6 @@ class ZyteClient
      *
      * @param string|array $url The URL to extract from
      * @return string|array
-     * @throws GuzzleException
      */
     public function extractHttpBody(string|array $url): string|array
     {
@@ -130,7 +129,6 @@ class ZyteClient
      *
      * @param string|array $url The URL(s) to extract from
      * @return string|array
-     * @throws GuzzleException
      */
     public function extractBrowserHtml(string|array $url): string|array
     {
@@ -149,8 +147,7 @@ class ZyteClient
      * Extract an article using the Zyte API.
      *
      * @param string|array $url The URL(s) to extract from
-     * @return mixed
-     * @throws GuzzleException
+     * @return string|array
      */
     public function extractArticle(string|array $url): string|array
     {
@@ -170,7 +167,6 @@ class ZyteClient
      * @param string|array $url The URL(s) to extract from
      * @param bool $browser Whether to use the browser engine or not
      * @return string|array The cleaned HTML
-     * @throws GuzzleException
      */
     public function extractCleanHtml(string|array $url, bool $browser = true): string|array
     {
@@ -192,7 +188,6 @@ class ZyteClient
      * @param string|array $url The URL(s) to extract from
      * @param bool $browser Whether to use the browser engine or not
      * @return string|array The markdown
-     * @throws GuzzleException
      */
     public function extractMarkdown(string|array $url, bool $browser = true): string|array
     {

@@ -2,7 +2,6 @@
 
 namespace Genstack\Zyte\Extractors;
 
-use Genstack\Integrations\Zyte\Integrations\Extractors\Extractor;
 use Symfony\Component\DomCrawler\Crawler;
 
 class CleanHtmlExtractor extends Extractor

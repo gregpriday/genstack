@@ -6,12 +6,12 @@ use Genstack\OpenAI\Facades\OpenAI;
 use Genstack\Serper\SerperClient;
 use Genstack\Zyte\ZyteClient;
 use GuzzleHttp\Exception\GuzzleException;
-use GuzzleHttp\Pool;
 use Illuminate\Support\Facades\Cache;
 
 class ResearchAgent
 {
     const RESEARCH_MODEL = 'gpt-3.5-turbo-16k';
+//    const RESEARCH_MODEL = 'gpt-4';
     const SEARCH_MODEL = 'gpt-4';
     const CLICK_MODEL = 'gpt-4';
 
@@ -59,10 +59,13 @@ class ResearchAgent
         $system = trim(file_get_contents(genstack_prompts_path('research/system-research.txt')));
         $system = str_replace('{{DATE}}', now()->format('d F Y'), $system);
 
+        $instructions = trim(file_get_contents(genstack_prompts_path('research/instructions.txt')));
+        $instructions = str_replace('{{PROMPT}}', $prompt, $instructions);
+
         $messages = [
             ['role' => 'system', 'content' => $system],
             ['role' => 'user', 'content' => $information],
-            ['role' => 'user', 'content' => $prompt]
+            ['role' => 'user', 'content' => $instructions]
         ];
 
         // Call the OpenAI API with the messages.
@@ -71,11 +74,11 @@ class ResearchAgent
                 'model' => self::RESEARCH_MODEL,
                 'messages' => $messages,
                 'functions' => $functions,
-                'temperature' => 0.2,
+                'temperature' => 0.15,
             ]);
 
         // Check if 'delegate_research' function is called by the AI and if the depth allows for further research.
-        if ($response->choices[0]->message->functionCall->name === 'delegate_research') {
+        if ($response->choices[0]->message->functionCall?->name === 'delegate_research') {
             $arguments = $response->choices[0]->message->functionCall->arguments;
             $additionalResearch = [];
 
@@ -186,7 +189,7 @@ class ResearchAgent
      */
     protected function filterUrls(array $urls): array
     {
-        $blockedHosts = config('research.blocked_hosts');
+        $blockedHosts = config('genstack.research.blocked_hosts');
 
         // Filter any URLs that have a blocked host
         return array_filter($urls, function ($url) use ($blockedHosts) {

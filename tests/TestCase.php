@@ -1,20 +1,15 @@
 <?php
 
-namespace Genstack\Genstack\Tests;
+namespace Genstack\Tests;
 
+use Genstack\GenstackServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Orchestra\Testbench\TestCase as Orchestra;
-use Genstack\Genstack\GenstackServiceProvider;
 
-class TestCase extends Orchestra
+class TestCase extends \Orchestra\Testbench\TestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
-
-        Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Genstack\\Genstack\\Database\\Factories\\'.class_basename($modelName).'Factory'
-        );
     }
 
     protected function getPackageProviders($app)
@@ -26,11 +21,8 @@ class TestCase extends Orchestra
 
     public function getEnvironmentSetUp($app)
     {
-        config()->set('database.default', 'testing');
-
-        /*
-        $migration = include __DIR__.'/../database/migrations/create_genstack_table.php.stub';
-        $migration->up();
-        */
+        // Load the config file
+        $app['config']->set('genstack', require __DIR__.'/../config/genstack.php');
+        $app['config']->set('openai', require __DIR__.'/../config/openai.php');
     }
 }
