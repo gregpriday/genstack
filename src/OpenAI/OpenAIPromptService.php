@@ -2,9 +2,9 @@
 
 namespace Genstack\OpenAI;
 
+use Genstack\OpenAI\Facades\OpenAI;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use App\Facades\OpenAI;
 
 abstract class OpenAIPromptService
 {
@@ -104,9 +104,10 @@ abstract class OpenAIPromptService
     /**
      * Allows child classes to filter the arguments before sending them to OpenAI.
      *
-     * @param array $arguments
-     * @param string|null $stage
-     * @return array
+     * @param array $arguments The current arguments.
+     * @param string|null $stage The current stage.
+     * @param array $messages The current messages.
+     * @return array Filtered arguments.
      */
     protected function filterArguments(array $arguments, string $stage = null, array $messages = []): array
     {

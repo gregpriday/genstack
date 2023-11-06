@@ -10,9 +10,9 @@ class OriginalityClient
 {
     const ENDPOINT = 'https://api.originality.ai/api/v1/';
 
-    private $client;
-    private $apiKey;
-    private $aiModelVersion;
+    private Client $client;
+    private string $apiKey;
+    private string $aiModelVersion;
 
     public function __construct(string $apiKey, string $aiModelVersion = '2.0')
     {

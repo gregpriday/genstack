@@ -56,10 +56,10 @@ class EmbeddingClient
     /**
      * @param string $text The text to embed.
      * @param string $type The type of embedding to perform. Either 'passage' or 'query'.
+     * @param string|null $size
      * @return Vector
      *
      * @throws GuzzleException
-     * @throws Exception
      */
     public function embed(string $text, string $type = 'passage', string $size = null): Vector
     {
@@ -67,7 +67,7 @@ class EmbeddingClient
             $text = "Represent this sentence for searching relevant passages: {$text}";
         }
 
-        $response = $this->client->post('', [
+        $response = $this->client->post($this->endpoint($size), [
             'headers' => $this->getHeaders(),
             'json' => [
                 'text' => $text,

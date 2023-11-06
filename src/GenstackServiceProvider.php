@@ -2,6 +2,7 @@
 
 namespace Genstack;
 
+use Genstack\Embedding\EmbeddingClient;
 use Genstack\Originality\OriginalityClient;
 use Genstack\ParagraphSplitter\ParagraphSplitter;
 use Genstack\Rewriter\ContentRewriter;
@@ -72,6 +73,13 @@ class GenstackServiceProvider extends PackageServiceProvider
                 app(ParagraphSplitter::class),
                 config('genstack.rewriter.model'),
                 config('genstack.rewriter.target'),
+            );
+        });
+        $this->app->singleton(EmbeddingClient::class, function(){
+            return new EmbeddingClient(
+                config('genstack.cloudflare.account_id'),
+                config('genstack.cloudflare.api_token'),
+                config('genstack.cloudflare.embedding_size')
             );
         });
 
