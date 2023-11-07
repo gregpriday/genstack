@@ -5,7 +5,6 @@ namespace Genstack\Zyte;
 use Genstack\Zyte\Extractors\CleanHtmlExtractor;
 use Genstack\Zyte\Extractors\MarkdownExtractor;
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Pool;
 use GuzzleHttp\Psr7\Request;

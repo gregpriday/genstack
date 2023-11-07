@@ -10,7 +10,7 @@ class Summarizer
 
     public function summarize(string $text, string $objective)
     {
-        $detailedPrompt = file_get_contents(genstack_prompts_path('research/summarize.md'));
+        $detailedPrompt = file_get_contents(genstack_prompts_path('research/summarize.txt'));
         $detailedPrompt = str_replace('{{objective}}', $objective, $detailedPrompt);
         $detailedPrompt = str_replace('{{text}}', $text, $detailedPrompt);
 

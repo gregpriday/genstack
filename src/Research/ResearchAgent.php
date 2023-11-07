@@ -11,10 +11,9 @@ use Illuminate\Support\Facades\Cache;
 
 class ResearchAgent
 {
-    const RESEARCH_MODEL = 'gpt-3.5-turbo-16k';
-//    const RESEARCH_MODEL = 'gpt-4';
-    const SEARCH_MODEL = 'gpt-4';
-    const CLICK_MODEL = 'gpt-4';
+    const RESEARCH_MODEL = 'gpt-4-1106-preview';
+    const SEARCH_MODEL = 'gpt-4-1106-preview';
+    const CLICK_MODEL = 'gpt-4-1106-preview';
 
     const CACHE_DURATION = '7 days';
 
