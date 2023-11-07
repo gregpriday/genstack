@@ -2,7 +2,7 @@
 
 return [
     'serper' => [
-        'key' => env('SERPER_KEY'),
+        'key' => env('SERPER_API_KEY'),
     ],
     'zyte' => [
         'key' => env('ZYTE_API_KEY'),
@@ -22,8 +22,9 @@ return [
     ],
 
     'research' => [
+        'model' => env('GENSTACK_RESEARCH_MODEL', 'gpt-4-1106-preview'),
         'blocked_hosts' => [
             'linkedin.com'
-        ]
+        ],
     ]
 ];

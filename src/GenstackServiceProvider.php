@@ -5,6 +5,8 @@ namespace Genstack;
 use Genstack\Embedding\EmbeddingClient;
 use Genstack\Originality\OriginalityClient;
 use Genstack\ParagraphSplitter\ParagraphSplitter;
+use Genstack\Research\ResearchAgent;
+use Genstack\Research\Summarizer;
 use Genstack\Rewriter\ContentRewriter;
 use Genstack\Serper\SerperClient;
 use Genstack\Zyte\ZyteClient;
@@ -80,6 +82,14 @@ class GenstackServiceProvider extends PackageServiceProvider
                 config('genstack.cloudflare.account_id'),
                 config('genstack.cloudflare.api_token'),
                 config('genstack.cloudflare.embedding_size')
+            );
+        });
+        $this->app->singleton(ResearchAgent::class, function(){
+            return new ResearchAgent(
+                app(SerperClient::class),
+                app(ZyteClient::class),
+                app(Summarizer::class),
+                config('genstack.research.model')
             );
         });
 

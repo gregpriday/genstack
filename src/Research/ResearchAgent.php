@@ -11,21 +11,19 @@ use Illuminate\Support\Facades\Cache;
 
 class ResearchAgent
 {
-    const RESEARCH_MODEL = 'gpt-4-1106-preview';
-    const SEARCH_MODEL = 'gpt-4-1106-preview';
-    const CLICK_MODEL = 'gpt-4-1106-preview';
-
     const CACHE_DURATION = '7 days';
 
     private SerperClient $serper;
     private ZyteClient $zyte;
     private Summarizer $summarizer;
+    private string $model;
 
-    public function __construct(SerperClient $serper, ZyteClient $zyte, Summarizer $summarizer)
+    public function __construct(SerperClient $serper, ZyteClient $zyte, Summarizer $summarizer, string $model)
     {
         $this->serper = $serper;
         $this->zyte = $zyte;
         $this->summarizer = $summarizer;
+        $this->model = $model;
     }
 
     /**
@@ -69,7 +67,7 @@ class ResearchAgent
         ];
 
         $args = [
-            'model' => self::RESEARCH_MODEL,
+            'model' => $this->model,
             'messages' => $messages,
             'temperature' => 0.15,
         ];
@@ -117,7 +115,7 @@ class ResearchAgent
             // Call the OpenAI API again with updated messages after recursive research.
             $response = OpenAI::chat()
                 ->create([
-                    'model' => self::RESEARCH_MODEL,
+                    'model' => $this->model,
                     'messages' => $messages,
                     'temperature' => 0.2,
                 ]);
@@ -145,7 +143,7 @@ class ResearchAgent
 
         $response = OpenAI::chat()
             ->create([
-                'model' => self::SEARCH_MODEL,
+                'model' => $this->model,
                 'messages' => $messages,
                 'functions' => $functions,
                 'temperature' => 0.0,
@@ -174,7 +172,7 @@ class ResearchAgent
         // We need to decide which results to click on
         $response = OpenAI::chat()
             ->create([
-                'model' => self::CLICK_MODEL,
+                'model' => $this->model,
                 'messages' => $messages,
                 'functions' => $functions,
                 'temperature' => 0.0,
